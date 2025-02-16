@@ -8,14 +8,20 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   isVerified: { type: Boolean, default: false }, // Email verification status
   verificationToken: String, // Token for email verification
+}, {
+  timestamps: true // Automatically manage createdAt and updatedAt fields
 });
 
 // Hash the password before saving the user
 userSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
-    this.password = await bcrypt.hash(this.password, 8); // Hash the password
+  try {
+    if (this.isModified('password')) {
+      this.password = await bcrypt.hash(this.password, 8); // Hash the password
+    }
+    next();
+  } catch (error) {
+    next(error); // Pass the error to the next middleware
   }
-  next();
 });
 
 // Export the User model
